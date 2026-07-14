@@ -1,0 +1,16 @@
+# kind cluster for the SlopSaver sandbox.
+#   kind create cluster --name slopsaver --config sandbox/kind-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: slopsaver
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080   # api-gateway
+        hostPort: 30080
+      - containerPort: 30081   # order-service
+        hostPort: 30081
+      - containerPort: 30432   # postgres (max_connections=20)
+        hostPort: 30432
+      - containerPort: 30900   # minio S3 API
+        hostPort: 30900

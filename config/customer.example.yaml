@@ -1,0 +1,69 @@
+# SlopSaver customer configuration — sandbox defaults (kind cluster).
+# Credentials are always env-var references, never inline values, so each
+# integration can be revoked independently (PRD §10).
+
+# Start every new customer in alert-only mode; flip to false once the agent
+# has earned autonomy (PRD §9 staging tier).
+alert_only: true
+
+# Optional dead-man's-switch (Healthchecks.io ping URL or similar)
+# heartbeat_url: https://hc-ping.com/your-uuid
+# heartbeat_interval: 60
+
+# Rule-layer threshold overrides (see slopsaver/core/rules.py for defaults)
+thresholds: {}
+
+integrations:
+  stripe:
+    api_key_env: STRIPE_API_KEY            # restricted, read-only key
+    orders_dsn: postgresql://restaurant:restaurant@localhost:30432/restaurant
+    orders_table: orders
+    webhook_url: http://localhost:30081/webhook/stripe
+    lookback_minutes: 60
+    interval: 300
+
+  postgres:
+    dsn: postgresql://restaurant:restaurant@localhost:30432/restaurant
+    kill_dsn: postgresql://restaurant:restaurant@localhost:30432/restaurant
+    idle_kill_seconds: 300
+    interval: 30
+
+  s3:
+    bucket: menu
+    canary_object: margherita.jpg
+    expected_content_type: image/jpeg
+    endpoint_url: http://localhost:30900   # MinIO in the sandbox
+    interval: 120
+
+  ssl:
+    host: localhost
+    port: 8443                             # chaos: python -m sandbox.chaos.expire_ssl
+    interval: 86400
+
+  dns:
+    domain: slopsave-diner.example
+    expiry_url: http://localhost:30080/registrar/domain
+    interval: 86400
+
+  email:
+    provider: http
+    metrics_url: http://localhost:30080/email/metrics
+    admin_url: http://localhost:30080/admin
+    interval: 600
+
+  traffic:
+    metrics_url: http://localhost:30080/metrics
+    admin_url: http://localhost:30080/admin
+    interval: 60
+
+  deploy:
+    metrics_url: http://localhost:30080/metrics
+    deploy_state_path: var/deploy_state.json
+    kubectl_context: kind-slopsaver
+    interval: 60
+
+  backup:
+    backup_dir: var/backups
+    # scratch_dsn: postgresql://restaurant:restaurant@localhost:30432/scratch
+    max_age_hours: 26
+    interval: 21600
