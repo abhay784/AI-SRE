@@ -67,6 +67,16 @@ DEFAULT_DECISIONS: dict[str, tuple[str, Severity]] = {
     "collector_failure": ("none", Severity.P3),
 }
 
+# Anomaly-context keys an action needs, copied verbatim into `params`. Without
+# this, e.g. block_ip fires with no `ip` and the adapter rejects it — a real
+# gap for a table-driven reasoner used as the LLM-outage fallback, not just
+# for tests.
+ACTION_PARAM_SOURCES: dict[str, tuple[str, ...]] = {
+    "block_ip": ("ip",),
+    "replay_webhook": ("charge_id",),
+    "reconstruct_order": ("charge_id",),
+}
+
 
 class FakeReasoner:
     """Table-driven reasoner for tests, CI, and LLM-down degraded mode."""
@@ -77,9 +87,15 @@ class FakeReasoner:
         )
         if action not in allowed_actions and action not in ("escalate", "none"):
             action = "escalate"
+        params = {
+            key: anomaly.context[key]
+            for key in ACTION_PARAM_SOURCES.get(action, ())
+            if key in anomaly.context
+        }
         return RemediationAction(
             anomaly_id=anomaly.id, adapter=anomaly.adapter, action=action,
-            severity=severity, rationale="deterministic default decision",
+            params=params, severity=severity,
+            rationale="deterministic default decision",
         )
 
 

@@ -13,8 +13,10 @@ Config:
 from __future__ import annotations
 
 import asyncio
+import socket
 import ssl
 import subprocess
+import tempfile
 from datetime import datetime, timezone
 
 from ..core.adapter import BaseAdapter
@@ -37,12 +39,20 @@ class SSLAdapter(BaseAdapter):
     def _check_cert(self) -> HealthResult:
         host = self.config["host"]
         port = int(self.config.get("port", 443))
-        context = ssl.create_default_context()
-        with context.wrap_socket(
-            __import__("socket").create_connection((host, port), timeout=10),
-            server_hostname=host,
-        ) as sock:
-            cert = sock.getpeercert()
+        # Deliberately unverified: we need notAfter even when the chain is
+        # untrusted, expired, or self-signed — those are exactly the states
+        # this adapter exists to catch, not reasons to fail closed.
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        with socket.create_connection((host, port), timeout=10) as raw_sock:
+            with context.wrap_socket(raw_sock, server_hostname=host) as sock:
+                der = sock.getpeercert(binary_form=True)
+        pem = ssl.DER_cert_to_PEM_cert(der)
+        with tempfile.NamedTemporaryFile("w", suffix=".pem") as f:
+            f.write(pem)
+            f.flush()
+            cert = ssl._ssl._test_decode_cert(f.name)
         not_after = datetime.strptime(cert["notAfter"], "%b %d %H:%M:%S %Y %Z").replace(
             tzinfo=timezone.utc
         )

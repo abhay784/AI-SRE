@@ -31,9 +31,22 @@ async def test_stripe_mismatch_autonomous_p2(make_orchestrator, tmp_path):
     # guardrail keeps stripe at >= P2, executed autonomously with notification
     assert incident.action.severity == Severity.P2
     assert incident.status == "remediated"
-    assert adapter.remediations == [("replay_webhook", {})]
+    assert adapter.remediations == [("replay_webhook", {"charge_id": "ch_42"})]
     assert (Path(tmp_path) / "incidents" / f"{incident.id}.md").exists()
     assert orch.audit.read("actions.jsonl")[0]["anomaly_type"] == "stripe_order_mismatch"
+
+
+async def test_bot_abuse_block_ip_carries_the_ip_param(make_orchestrator):
+    """FakeReasoner is also the LLM-outage fallback (see reasoning.py), so a
+    proposed block_ip must carry the actual IP from anomaly context — not an
+    empty params dict the adapter will reject. Found live: the sandbox's bot
+    traffic chaos script triggered endpoint_abuse but block_ip failed with
+    'requires an ip param' because params weren't threaded through."""
+    adapter = FakeAdapter("traffic", TRAFFIC_ACTIONS, {"top_ips": {"203.0.113.66": 15.0}})
+    orch = make_orchestrator({"traffic": adapter})
+    (incident,) = await orch.poll_once(adapter)
+    assert incident.status == "remediated"
+    assert adapter.remediations == [("block_ip", {"ip": "203.0.113.66"})]
 
 
 async def test_db_pool_p2_kills_idle_connections(make_orchestrator):
@@ -59,6 +72,32 @@ async def test_public_bucket_is_p1_and_waits_for_approval(make_orchestrator):
     assert approved.status == "remediated"
     assert approved.approved_by == "test-human"
     assert adapter.remediations == [("revert_policy", {})]
+
+
+async def test_failed_p1_execution_is_requeued_not_dropped(make_orchestrator):
+    """A P1 revert that fails after approval (bad credentials, network blip)
+    must stay visible and retryable — not vanish from the approval queue.
+    Found live: a failed `slopsaver approve` on a public-bucket incident
+    silently removed it from `pending` with the bucket still exposed."""
+    adapter = FakeAdapter("s3", S3_ACTIONS, {"policy_drifted": True, "public_access": True})
+    adapter.fail_remediation = True
+    orch = make_orchestrator({"s3": adapter})
+    (incident,) = await orch.poll_once(adapter)
+    assert incident.status == "awaiting_approval"
+
+    failed = await orch.execute_approved(incident.id, by="test-human")
+    assert failed.status == "awaiting_approval"
+    assert failed.approved_by is None  # failed run is not "approved and done"
+    assert failed.result.ok is False
+
+    # still visible for a retry, not silently dropped
+    assert [i.id for i in orch.approvals.pending()] == [incident.id]
+
+    # now succeeds
+    adapter.fail_remediation = False
+    retried = await orch.execute_approved(incident.id, by="test-human")
+    assert retried.status == "remediated"
+    assert orch.approvals.pending() == []
 
 
 async def test_bad_deploy_rollback_requires_approval(make_orchestrator):

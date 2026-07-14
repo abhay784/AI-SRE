@@ -61,6 +61,12 @@ def render_report(incident: Incident) -> str:
         lines.append("Nothing needed — this turned out to be a false alarm.")
     elif incident.action.action == "escalate":
         lines.append("This needed a human decision, so we alerted you instead of acting automatically.")
+    elif incident.status == "awaiting_approval" and incident.result is not None:
+        lines.append(f"We tried the fix `{incident.action.action}` after your approval, but it "
+                     f"**did not succeed** — it's back in the queue for you to retry.")
+        if incident.result.detail:
+            lines += ["", f"Details: {incident.result.detail}"]
+        lines += ["", f"Retry with: `slopsaver approve {incident.id}`"]
     elif incident.status == "awaiting_approval":
         lines.append(f"We prepared a fix (`{incident.action.action}`) and are **waiting for your approval** "
                      f"before running it. Approve with: `slopsaver approve {incident.id}`")

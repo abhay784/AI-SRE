@@ -1,0 +1,46 @@
+# Live demo config against the kind sandbox.
+# stripe (needs a real Stripe key) and backup (needs the pg_restore CLI) are
+# omitted here — see config/customer.example.yaml for the full set.
+alert_only: false
+thresholds: {}
+
+integrations:
+  postgres:
+    dsn: postgresql://restaurant:restaurant@localhost:30432/restaurant
+    kill_dsn: postgresql://restaurant:restaurant@localhost:30432/restaurant
+    idle_kill_seconds: 5
+    interval: 10
+
+  s3:
+    bucket: menu
+    canary_object: margherita.jpg
+    expected_content_type: image/jpeg
+    endpoint_url: http://localhost:30900
+    interval: 15
+
+  ssl:
+    host: localhost
+    port: 8443
+    interval: 20
+
+  dns:
+    domain: slopsave-diner.example
+    expiry_url: http://localhost:30080/registrar/domain
+    interval: 20
+
+  email:
+    provider: http
+    metrics_url: http://localhost:30080/email/metrics
+    admin_url: http://localhost:30080/admin
+    interval: 15
+
+  traffic:
+    metrics_url: http://localhost:30080/metrics
+    admin_url: http://localhost:30080/admin
+    interval: 10
+
+  deploy:
+    metrics_url: http://localhost:30080/metrics
+    deploy_state_path: var/deploy_state.json
+    kubectl_context: kind-slopsaver
+    interval: 10

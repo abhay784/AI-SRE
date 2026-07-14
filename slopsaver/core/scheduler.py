@@ -94,7 +94,13 @@ class Orchestrator:
         return incident
 
     async def execute_approved(self, incident_id: str, *, by: str = "cli") -> Incident | None:
-        """Run a P1 remediation after human approval (called by the CLI)."""
+        """Run a P1 remediation after human approval (called by the CLI).
+
+        If execution fails (bad credentials, transient network error, ...),
+        the incident is re-queued as awaiting approval rather than silently
+        dropped — a failed revert of a public bucket, for example, must stay
+        visible and retryable, not vanish because one attempt errored.
+        """
         incident = self.approvals.resolve(incident_id, approved=True, by=by)
         if incident is None or incident.action is None:
             return None
@@ -104,6 +110,10 @@ class Orchestrator:
         else:
             incident.result = await adapter.remediate(incident.action.action, incident.action.params)
         incident.status = "remediated" if incident.result.ok else "failed"
+        if not incident.result.ok:
+            incident.status = "awaiting_approval"
+            incident.approved_by = None
+            self.approvals.enqueue(incident)
         self._record(incident)
         return incident
 

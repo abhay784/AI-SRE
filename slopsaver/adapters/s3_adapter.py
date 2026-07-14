@@ -108,12 +108,25 @@ class S3Adapter(BaseAdapter):
 
     @staticmethod
     def _is_public(policy: dict | None) -> bool:
+        """True if any Allow statement grants access to everyone.
+
+        S3-compatible stores normalize `Principal: "*"` in different shapes —
+        a bare string, `{"AWS": "*"}`, or `{"AWS": ["*"]}` (MinIO's form, and
+        what real S3 returns once a policy has been round-tripped). All three
+        mean the same thing and must be treated as public.
+        """
         if not policy:
             return False
         for stmt in policy.get("Statement", []):
+            if stmt.get("Effect") != "Allow":
+                continue
             principal = stmt.get("Principal")
-            if stmt.get("Effect") == "Allow" and principal in ("*", {"AWS": "*"}):
+            if principal == "*":
                 return True
+            if isinstance(principal, dict):
+                aws = principal.get("AWS")
+                if aws == "*" or (isinstance(aws, list) and "*" in aws):
+                    return True
         return False
 
     async def remediate(self, action: str, params: dict) -> RemediationResult:
