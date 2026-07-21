@@ -2,6 +2,10 @@
 
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()  # each chaos script is a standalone process; pick up .env too
+
 GATEWAY = os.environ.get("SANDBOX_GATEWAY", "http://localhost:30080")
 ORDERS = os.environ.get("SANDBOX_ORDERS", "http://localhost:30081")
 POSTGRES_DSN = os.environ.get(

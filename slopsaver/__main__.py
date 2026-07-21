@@ -15,6 +15,7 @@ import logging
 import sys
 
 import yaml
+from dotenv import load_dotenv
 
 from .core.approvals import ApprovalQueue
 from .core.audit import AuditLog
@@ -78,6 +79,11 @@ async def _approve(config: dict, incident_id: str, fake_reasoner: bool) -> int:
 
 
 def main() -> None:
+    # Loads .env from the current directory (or nearest parent) if present;
+    # a no-op if it's absent, so nothing breaks for users using real env vars
+    # or `ant auth login` instead. Real shell/CI env vars always win — dotenv
+    # never overrides an already-set variable.
+    load_dotenv()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
     parser = argparse.ArgumentParser(prog="slopsaver")
     parser.add_argument("--config", default="config/customer.yaml")

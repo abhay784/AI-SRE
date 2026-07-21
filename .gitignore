@@ -4,3 +4,4 @@ __pycache__/
 var/
 config/customer.yaml
 .pytest_cache/
+.env

@@ -32,8 +32,16 @@ class StripeAdapter(BaseAdapter):
     name = "stripe"
     default_interval = 300.0  # every 5 minutes per PRD §7
     ACTIONS = {
-        "replay_webhook": "Re-send the missed Stripe event to the app's webhook endpoint",
-        "reconstruct_order": "Rebuild the order row directly from the Stripe charge object",
+        "replay_webhook": (
+            "Re-send the missed Stripe event to the app's webhook endpoint. "
+            "Required param: charge_id (string) — copy it verbatim from the "
+            "anomaly context's charge_id field."
+        ),
+        "reconstruct_order": (
+            "Rebuild the order row directly from the Stripe charge object. "
+            "Required param: charge_id (string) — copy it verbatim from the "
+            "anomaly context's charge_id field."
+        ),
     }
 
     def _client(self):

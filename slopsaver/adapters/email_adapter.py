@@ -28,8 +28,10 @@ class EmailAdapter(BaseAdapter):
     name = "email"
     default_interval = 600.0
     ACTIONS = {
-        "throttle_noncritical": "Pause marketing/non-critical email so transactional email keeps its quota",
-        "failover_provider": "Switch the app to its secondary email provider (SES <-> SendGrid)",
+        "throttle_noncritical": "Pause marketing/non-critical email so transactional email keeps "
+                                "its quota. No params required.",
+        "failover_provider": "Switch the app to its secondary email provider (SES <-> SendGrid). "
+                             "No params required.",
     }
 
     async def check_health(self) -> HealthResult:

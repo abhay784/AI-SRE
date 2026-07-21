@@ -25,8 +25,12 @@ class TrafficAdapter(BaseAdapter):
     name = "traffic"
     default_interval = 60.0
     ACTIONS = {
-        "block_ip": "Block a single IP at the application layer (param: ip)",
-        "enable_captcha": "Temporarily require CAPTCHA on public forms and pause downstream calls",
+        "block_ip": (
+            "Block a single IP at the application layer. Required param: ip "
+            "(string) — copy it verbatim from the anomaly context's ip field."
+        ),
+        "enable_captcha": "Temporarily require CAPTCHA on public forms and pause downstream calls. "
+                          "No params required.",
     }
 
     async def check_health(self) -> HealthResult:

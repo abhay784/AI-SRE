@@ -36,6 +36,13 @@ deterministic monitor detected an anomaly and woke you up. Your job:
 Anything involving customer payments, data exposure, or taking the site down
 is P1. When uncertain between two tiers, pick the more severe one.
 
+Each action's description tells you exactly what `params` it needs, if any —
+read it carefully. `params` must be a JSON object containing ONLY those keys,
+with values copied verbatim from the anomaly context packet (e.g. an action
+needing `ip` gets `{"ip": "<the ip from context>"}`, not a summary of what
+went wrong). If an action's description says no params are required, send
+`{}` — do not invent fields or restate the anomaly there.
+
 You MUST finish by calling propose_remediation exactly once.
 """
 
@@ -78,6 +85,17 @@ ACTION_PARAM_SOURCES: dict[str, tuple[str, ...]] = {
 }
 
 
+def backfill_required_params(action: str, params: dict, anomaly: AnomalyEvent) -> dict:
+    """Fill in any param an action is known to need but the caller omitted,
+    from the anomaly context that produced it. Never overrides a value
+    already present in `params` — this is a safety net under whatever
+    supplied the params (table lookup or an LLM), not a source of truth."""
+    for key in ACTION_PARAM_SOURCES.get(action, ()):
+        if key not in params and key in anomaly.context:
+            params[key] = anomaly.context[key]
+    return params
+
+
 class FakeReasoner:
     """Table-driven reasoner for tests, CI, and LLM-down degraded mode."""
 
@@ -87,11 +105,7 @@ class FakeReasoner:
         )
         if action not in allowed_actions and action not in ("escalate", "none"):
             action = "escalate"
-        params = {
-            key: anomaly.context[key]
-            for key in ACTION_PARAM_SOURCES.get(action, ())
-            if key in anomaly.context
-        }
+        params = backfill_required_params(action, {}, anomaly)
         return RemediationAction(
             anomaly_id=anomaly.id, adapter=anomaly.adapter, action=action,
             params=params, severity=severity,
@@ -142,7 +156,10 @@ class ClaudeReasoner:
         @tool(
             "propose_remediation",
             "Record your final decision. Call exactly once. `action` must be one "
-            "of the allowed actions, or 'escalate' or 'none'. `severity` is P1, "
+            "of the allowed actions, or 'escalate' or 'none'. `params` is a JSON "
+            "object (as a string, e.g. '{}' or '{\"ip\": \"1.2.3.4\"}') containing "
+            "exactly the keys the chosen action's description says it needs — "
+            "copied from the anomaly context, not invented. `severity` is P1, "
             "P2, or P3. `rationale` is a plain-English explanation for the owner.",
             {"action": str, "params": str, "severity": str, "rationale": str},
         )
@@ -192,6 +209,12 @@ class ClaudeReasoner:
         action = proposal.get("action", "escalate")
         if action not in allowed_actions and action not in ("escalate", "none"):
             action = "escalate"  # never execute an action outside the allowlist
+
+        # Backstop: if the model omitted a param an action is known to need
+        # but the anomaly context has it, fill it in rather than let the
+        # adapter reject the action outright. Never overrides a value the
+        # model did supply.
+        params = backfill_required_params(action, params, anomaly)
 
         try:
             severity = Severity(proposal.get("severity", anomaly.severity_hint.value))

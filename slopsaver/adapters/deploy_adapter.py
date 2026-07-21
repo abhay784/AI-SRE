@@ -31,7 +31,12 @@ class DeployAdapter(BaseAdapter):
     name = "deploy"
     default_interval = 60.0
     ACTIONS = {
-        "rollback": "Roll the Kubernetes deployment back to the previous revision",
+        "rollback": (
+            "Roll the Kubernetes deployment back to the previous revision. "
+            "No params required — the deployment/namespace are read from the "
+            "recorded deploy state. Optional params: deployment (string), "
+            "namespace (string) to override."
+        ),
     }
 
     def _deploy_state(self) -> dict:

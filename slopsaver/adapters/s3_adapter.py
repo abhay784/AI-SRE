@@ -32,7 +32,7 @@ class S3Adapter(BaseAdapter):
     name = "s3"
     default_interval = 120.0
     ACTIONS = {
-        "revert_policy": "Restore the bucket policy to the stored last-known-good baseline",
+        "revert_policy": "Restore the bucket policy to the stored last-known-good baseline. No params required.",
     }
 
     def _client(self):

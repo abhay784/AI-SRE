@@ -22,7 +22,11 @@ class PostgresAdapter(BaseAdapter):
     name = "postgres"
     default_interval = 30.0  # every 30s per PRD §7
     ACTIONS = {
-        "kill_idle_connections": "Terminate idle-in-transaction backends older than the configured age",
+        "kill_idle_connections": (
+            "Terminate idle-in-transaction backends older than the configured age. "
+            "No params required. Optional param: idle_seconds (integer) to override "
+            "the default threshold for this run."
+        ),
     }
 
     async def check_health(self) -> HealthResult:

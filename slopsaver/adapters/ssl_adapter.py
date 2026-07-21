@@ -27,7 +27,7 @@ class SSLAdapter(BaseAdapter):
     name = "ssl"
     default_interval = 86400.0  # daily per PRD §7
     ACTIONS = {
-        "renew_certificate": "Run the configured ACME renewal command",
+        "renew_certificate": "Run the configured ACME renewal command. No params required.",
     }
 
     async def check_health(self) -> HealthResult:
