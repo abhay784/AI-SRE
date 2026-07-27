@@ -1,10 +1,10 @@
-# SlopSaver
+# AI SRE bot
 
 Autonomous application-layer reliability agent for small business websites.
 Detects business-logic failures that edge tools can't see (dropped Stripe
 webhooks, S3 policy flips, DB pool exhaustion, lapsing certs/domains, bad
 deploys, silent backup failures), reasons about them with Claude, remediates
-where safe, and reports in plain English. See [plan.md](plan.md) and the PRD.
+where safe, and reports in plain English.
 
 ## Architecture in one line
 
