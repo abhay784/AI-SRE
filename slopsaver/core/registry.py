@@ -15,6 +15,7 @@ from .adapter import BaseAdapter
 _ADAPTERS = {
     "website": "website_adapter:WebsiteAdapter",
     "github": "github_adapter:GitHubAdapter",
+    "prometheus": "prometheus_adapter:PrometheusAdapter",
     "stripe": "stripe_adapter:StripeAdapter",
     "postgres": "postgres_adapter:PostgresAdapter",
     "s3": "s3_adapter:S3Adapter",

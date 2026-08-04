@@ -66,6 +66,59 @@ enabled. Choose explicit workflows and longer intervals to reduce API usage.
 Rate-limit errors wait for the normal next cycle; adaptive scheduling is not
 implemented. See [GitHub's rate-limit documentation](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api).
 
+## Prometheus configuration
+
+AI-SRE connects to the stable Prometheus instant-query endpoint,
+`/api/v1/query`, which accepts PromQL and returns JSON. Prometheus itself is
+free, Apache 2.0-licensed software that you can self-host. Managed Prometheus
+services are separate products and may charge for storage, ingestion, or query
+usage. The adapter also works with Prometheus-compatible query endpoints when
+they support this API shape.
+
+```yaml
+prometheus:
+  url: https://prometheus.example.com
+  interval: 60
+  bearer_token_env: PROMETHEUS_BEARER_TOKEN # omit when the endpoint has no auth
+  queries:
+    - name: api-error-rate
+      query: sum(rate(http_requests_total{job="api",code=~"5.."}[5m])) / sum(rate(http_requests_total{job="api"}[5m]))
+      operator: gt
+      threshold: 0.05
+      reducer: max
+      severity: P1
+      failure_threshold: 2
+    - name: api-p95-latency-seconds
+      query: histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job="api"}[5m])))
+      operator: gt
+      threshold: 0.8
+      severity: P2
+```
+
+Queries must return an instant scalar or vector. Vector results are reduced to
+one value before comparison: `max` is the default; `min`, `sum`, and `avg` are
+also supported. Prefer PromQL that aggregates deliberately, and use the reducer
+only to make fallback behavior explicit. Requests are capped at 100 series, one
+mebibyte of response data, and a configurable timeout (10 seconds by default).
+Range-query results, non-finite samples, HTTP errors, and invalid responses are
+recorded as query failures.
+
+`operator` is one of `gt`, `gte`, `lt`, or `lte`. An alert opens when the
+reduced value satisfies its operator/threshold condition. Empty results fail by
+default because missing telemetry can hide an outage. Set `no_data_is_failure:
+false` only when an absent series is explicitly expected. `failure_threshold`
+controls consecutive failing polls before an incident; it defaults to two.
+
+Use `severity: P1`, `P2`, or `P3` to set incident severity. Prometheus
+monitoring is read-only: it has no remediation actions and sends no write
+requests to Prometheus. A configured bearer token is read from the environment,
+used only for the Prometheus endpoint, and excluded from incident reports and
+audit records. Use HTTPS and enforce authentication at a reverse proxy or a
+compatible endpoint.
+
+See Prometheus’s [HTTP API documentation](https://prometheus.io/docs/prometheus/latest/querying/api/)
+and [license information](https://prometheus.io/docs/introduction/faq/#what-is-the-license-of-prometheus).
+
 ## Incident lifecycle and storage
 
 `state_dir` defaults to `var`, relative to the working directory:

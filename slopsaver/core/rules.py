@@ -71,7 +71,8 @@ class RuleEngine:
     # -- per-adapter rules ----------------------------------------------------
 
     def _condition(self, h: HealthResult, kind: str, context: dict, *,
-                   unhealthy: bool, threshold: int = 1) -> list[AnomalyEvent]:
+                   unhealthy: bool, threshold: int = 1,
+                   severity: Severity = Severity.P2) -> list[AnomalyEvent]:
         resource = str(context["resource_id"])
         key = (h.adapter, kind, resource)
         recovery_key = (h.adapter, "monitor_recovered", resource)
@@ -81,7 +82,7 @@ class RuleEngine:
                 return []
             self._active.add(key)
             self._recent.pop(recovery_key, None)
-            return [AnomalyEvent(adapter=h.adapter, anomaly_type=kind, severity_hint=Severity.P2,
+            return [AnomalyEvent(adapter=h.adapter, anomaly_type=kind, severity_hint=severity,
                                  context={**context, "consecutive_failures": self._streaks[key]})]
         self._streaks.pop(key, None)
         self._recent.pop(key, None)
@@ -110,6 +111,17 @@ class RuleEngine:
             for run in repository.get("runs", []):
                 out.extend(self._condition(h, "github_workflow_failed", run,
                                           unhealthy=not run["ok"]))
+        return out
+
+    def _rule_prometheus(self, h: HealthResult) -> list[AnomalyEvent]:
+        out = []
+        for query in h.observed.get("queries", []):
+            out.extend(self._condition(
+                h, "prometheus_query_unhealthy", query,
+                unhealthy=not query["ok"],
+                threshold=query.get("failure_threshold", 2),
+                severity=Severity(query.get("severity", Severity.P2.value)),
+            ))
         return out
 
     def _rule_stripe(self, h: HealthResult) -> list[AnomalyEvent]:

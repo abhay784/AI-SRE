@@ -112,6 +112,9 @@ class FakeReasoner:
         elif anomaly.anomaly_type == "github_workflow_failed":
             ctx = anomaly.context
             rationale = f"{ctx['repo']} ({ctx['branch']}): {ctx['workflow']} ended with {ctx['conclusion']}. See {ctx['url']}"
+        elif anomaly.anomaly_type == "prometheus_query_unhealthy":
+            ctx = anomaly.context
+            rationale = f"{ctx['name']}: " + "; ".join(ctx.get("issues", []))
         elif anomaly.anomaly_type == "collector_failure":
             rationale = anomaly.context.get("error", "Monitoring is unavailable; inspect the collector configuration.")
         elif anomaly.anomaly_type == "monitor_recovered":
