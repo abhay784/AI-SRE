@@ -76,3 +76,24 @@ async def test_orchestrator_enforces_empty_allowlist_even_with_custom_reasoner(m
     assert incident.action.adapter == "website"
     assert incident.action.action == "escalate"
     assert adapter.remediations == []
+
+
+def test_prometheus_breach_confirmation_recovery_and_severity():
+    rules = RuleEngine()
+
+    def poll(value, *, ok, severity="P1"):
+        return rules.evaluate(HealthResult(adapter="prometheus", ok=ok, observed={"queries": [{
+            "resource_id": "api-error-rate", "name": "api-error-rate", "ok": ok,
+            "value": value, "operator": "gt", "threshold": 0.05, "severity": severity,
+            "failure_threshold": 2,
+        }]}))
+
+    assert poll(0.12, ok=False) == []
+    breach, = poll(0.12, ok=False)
+    assert breach.anomaly_type == "prometheus_query_unhealthy"
+    assert breach.severity_hint == Severity.P1
+    assert poll(0.12, ok=False) == []
+    recovery, = poll(0.01, ok=True)
+    assert recovery.anomaly_type == "monitor_recovered"
+    assert poll(0.12, ok=False) == []
+    assert len(poll(0.12, ok=False)) == 1

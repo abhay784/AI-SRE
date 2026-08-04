@@ -1,6 +1,6 @@
 # AI-SRE
 
-**Self-hosted website and GitHub Actions monitoring, with optional AI incident analysis.**
+**Self-hosted website, GitHub Actions, and Prometheus monitoring, with optional AI incident analysis.**
 
 [![Tests](https://github.com/abhay784/AI-SRE/actions/workflows/ci.yml/badge.svg)](https://github.com/abhay784/AI-SRE/actions/workflows/ci.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
@@ -27,6 +27,7 @@ API key. Hosted accounts, a web dashboard, and customer onboarding are on the
 | --- | --- |
 | Website checks | Multiple HTTP(S) URLs, expected status, response time, optional page text, redirects, and TLS verification. |
 | GitHub Actions | Selected repositories and branches; discover active workflows or select workflow files. Inspect each workflow's latest completed run and link directly to failures. |
+| Prometheus | Run bounded instant PromQL queries against a Prometheus-compatible server and alert on configured numeric thresholds. |
 | Incident lifecycle | Confirm consecutive website failures, suppress repeat alerts per target for 30 minutes, and report observed recovery. |
 | Reports and alerts | Markdown incident reports, JSONL audit records, and optional JSON incident/recovery webhooks with bounded retries. |
 | Optional AI reasoning | Invoke the Claude Agent SDK only after a deterministic rule detects an anomaly; fall back to deterministic decisions if reasoning fails. |
@@ -136,6 +137,14 @@ integrations:
       - repo: your-account/your-project
         branch: main
         workflows: [ci.yml]
+  prometheus:
+    url: https://prometheus.example.com
+    queries:
+      - name: api-error-rate
+        query: sum(rate(http_requests_total{job="api",code=~"5.."}[5m])) / sum(rate(http_requests_total{job="api"}[5m]))
+        operator: gt
+        threshold: 0.05
+        severity: P1
 ```
 
 Remove integrations you do not need. To run continuously in Docker after

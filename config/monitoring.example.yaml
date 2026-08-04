@@ -32,3 +32,18 @@ integrations:
         branch: main
         # Omit workflows to discover all active workflows (paginated).
         # workflows: [ci.yml]
+
+  # Prometheus-compatible instant-query monitoring. Set the endpoint and
+  # adapt the metric labels to your application before enabling.
+  # prometheus:
+  #   url: https://prometheus.example.com
+  #   interval: 60
+  #   bearer_token_env: PROMETHEUS_BEARER_TOKEN
+  #   queries:
+  #     - name: api-error-rate
+  #       query: sum(rate(http_requests_total{job="api",code=~"5.."}[5m])) / sum(rate(http_requests_total{job="api"}[5m]))
+  #       operator: gt
+  #       threshold: 0.05
+  #       reducer: max
+  #       severity: P1
+  #       failure_threshold: 2

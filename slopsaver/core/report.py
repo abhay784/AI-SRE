@@ -19,6 +19,7 @@ _SEVERITY_LABEL = {
 _FRIENDLY_TITLES = {
     "website_unhealthy": "A website health check is failing",
     "github_workflow_failed": "A GitHub Actions workflow needs attention",
+    "prometheus_query_unhealthy": "A Prometheus metric threshold is breached",
     "monitor_recovered": "A monitored system is healthy again",
     "stripe_order_mismatch": "A customer was charged but their order didn't come through",
     "stripe_webhook_failing": "Payment notifications from Stripe are failing",
