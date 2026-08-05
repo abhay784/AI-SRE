@@ -12,8 +12,9 @@ import logging
 from .adapter import BaseAdapter
 from .approvals import ApprovalQueue, apply_severity_guardrails
 from .audit import AuditLog
-from .models import Incident, RemediationResult, Severity
-from .reasoning import Reasoner
+from .models import HealthResult, Incident, RemediationResult, Severity
+from .reasoning import FakeReasoner, Reasoner
+from .notifications import WebhookNotifier
 from .report import write_report
 from .rules import RuleEngine
 
@@ -31,6 +32,7 @@ class Orchestrator:
         approvals: ApprovalQueue | None = None,
         alert_only: bool = False,
         var_root: str = "var",
+        notifier: WebhookNotifier | None = None,
     ):
         self.adapters = adapters
         self.reasoner = reasoner
@@ -40,6 +42,7 @@ class Orchestrator:
         self.alert_only = alert_only
         self.incident_root = f"{var_root}/incidents"
         self.incidents: list[Incident] = []
+        self.notifier = notifier
 
     # -- polling loops --------------------------------------------------------
 
@@ -52,13 +55,21 @@ class Orchestrator:
     async def _poll_loop(self, adapter: BaseAdapter) -> None:
         interval = float(adapter.config.get("interval", adapter.default_interval))
         while True:
-            await self.poll_once(adapter)
+            try:
+                await self.poll_once(adapter)
+            except Exception:
+                # A broken integration/report must not kill every monitor.
+                log.error("poll pipeline failed for %s; retrying on next interval", adapter.name)
             await asyncio.sleep(interval)
 
     async def poll_once(self, adapter: BaseAdapter) -> list[Incident]:
         """One poll of one adapter, through the whole pipeline. Returns any
         incidents created — this is also the entry point the tests drive."""
-        health = await adapter.check_health()
+        try:
+            health = await adapter.check_health()
+        except Exception as exc:
+            health = HealthResult(adapter=adapter.name, ok=False,
+                                  error=f"collector raised {type(exc).__name__}")
         incidents = []
         for anomaly in self.rules.evaluate(health):
             log.warning("anomaly detected: %s/%s", anomaly.adapter, anomaly.anomaly_type)
@@ -75,11 +86,19 @@ class Orchestrator:
 
     async def handle_anomaly(self, anomaly) -> Incident:
         adapter = self.adapters[anomaly.adapter]
-        decision = await self.reasoner.decide(anomaly, adapter.ACTIONS)
+        reasoner = FakeReasoner() if anomaly.anomaly_type == "monitor_recovered" else self.reasoner
+        decision = await reasoner.decide(anomaly, adapter.ACTIONS)
+        # Enforce the adapter boundary even for injected/custom reasoners.
+        decision.adapter = anomaly.adapter
+        decision.anomaly_id = anomaly.id
+        if decision.action not in adapter.ACTIONS and decision.action not in {"none", "escalate"}:
+            decision.action = "escalate"
         decision = apply_severity_guardrails(decision)
         incident = Incident(anomaly=anomaly, action=decision)
 
-        if decision.action == "none":
+        if anomaly.anomaly_type == "monitor_recovered":
+            incident.status = "recovered"
+        elif decision.action == "none":
             incident.status = "closed"
         elif decision.action == "escalate" or self.alert_only:
             incident.status = "escalated"
@@ -91,6 +110,7 @@ class Orchestrator:
             incident.status = "remediated" if incident.result.ok else "failed"
 
         self._record(incident)
+        await self._notify(incident)
         return incident
 
     async def execute_approved(self, incident_id: str, *, by: str = "cli") -> Incident | None:
@@ -115,10 +135,18 @@ class Orchestrator:
             incident.approved_by = None
             self.approvals.enqueue(incident)
         self._record(incident)
+        await self._notify(incident)
         return incident
+
+    async def _notify(self, incident: Incident) -> None:
+        if self.notifier and incident.status != "closed":
+            delivered = await self.notifier.send(incident)
+            self.audit._append("notifications.jsonl", {"incident_id": incident.id,
+                                                       "delivered": delivered})
 
     def _record(self, incident: Incident) -> None:
         self.incidents.append(incident)
+        del self.incidents[:-1000]
         action = incident.action
         self.audit.action(
             incident_id=incident.id,
