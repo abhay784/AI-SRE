@@ -35,7 +35,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main(days: int, port: int) -> None:
-    tmp = Path(tempfile.mkdtemp(prefix="slopsaver-ssl-"))
+    tmp = Path(tempfile.mkdtemp(prefix="ai-sre-ssl-"))
     cert, key = make_cert(days, tmp)
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ctx.load_cert_chain(cert, key)

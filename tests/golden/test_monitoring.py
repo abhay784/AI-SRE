@@ -1,8 +1,8 @@
 import httpx
 
-from slopsaver.adapters.website_adapter import WebsiteAdapter
-from slopsaver.core.models import HealthResult, RemediationAction, Severity
-from slopsaver.core.rules import RuleEngine
+from ai_sre.adapters.website_adapter import WebsiteAdapter
+from ai_sre.core.models import HealthResult, RemediationAction, Severity
+from ai_sre.core.rules import RuleEngine
 from tests.conftest import FakeAdapter
 
 

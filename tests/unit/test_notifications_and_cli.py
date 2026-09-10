@@ -3,11 +3,11 @@ import json
 import httpx
 import pytest
 
-from slopsaver.__main__ import _build_orchestrator, _check, main
-from slopsaver.core.models import AnomalyEvent, Incident, RemediationAction, Severity
-from slopsaver.core.notifications import WebhookNotifier
-from slopsaver.core.registry import build_adapters
-from slopsaver.core.report import render_report
+from ai_sre.__main__ import _build_orchestrator, _check, main
+from ai_sre.core.models import AnomalyEvent, Incident, RemediationAction, Severity
+from ai_sre.core.notifications import WebhookNotifier
+from ai_sre.core.registry import build_adapters
+from ai_sre.core.report import render_report
 
 
 def incident(status="escalated"):
@@ -21,7 +21,7 @@ async def test_webhook_retries_with_stable_idempotency_key(monkeypatch):
     requests = []
     async def no_wait(_):
         pass
-    monkeypatch.setattr("slopsaver.core.notifications.asyncio.sleep", no_wait)
+    monkeypatch.setattr("ai_sre.core.notifications.asyncio.sleep", no_wait)
     event = incident("recovered")
     def respond(request):
         requests.append(request)
@@ -61,7 +61,7 @@ def test_config_flag_before_and_after_command(argv, monkeypatch, tmp_path):
     async def check(config, **kwargs):
         assert config == {"integrations": {}}
         return 0
-    monkeypatch.setattr("slopsaver.__main__._check", check)
+    monkeypatch.setattr("ai_sre.__main__._check", check)
     with pytest.raises(SystemExit) as exc:
         main()
     assert exc.value.code == 0
@@ -70,7 +70,7 @@ def test_config_flag_before_and_after_command(argv, monkeypatch, tmp_path):
 @pytest.mark.parametrize("ok,code", [(True, 0), (False, 1)])
 async def test_check_exit_codes_and_json(ok, code, monkeypatch, capsys):
     from tests.conftest import FakeAdapter
-    monkeypatch.setattr("slopsaver.__main__.build_adapters",
+    monkeypatch.setattr("ai_sre.__main__.build_adapters",
                         lambda c: {"test": FakeAdapter("test", {}, {}, ok=ok)})
     assert await _check({}, as_json=True) == code
     assert json.loads(capsys.readouterr().out)[0]["ok"] is ok

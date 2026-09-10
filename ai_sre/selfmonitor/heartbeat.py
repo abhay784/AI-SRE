@@ -1,6 +1,6 @@
 """Dead-man's-switch heartbeat (PRD §8).
 
-Pings an external URL (Healthchecks.io-style) every N seconds. If SlopSaver
+Pings an external URL (Healthchecks.io-style) every N seconds. If AI-SRE
 itself dies, the pings stop and the *external* service pages the operator —
 monitoring for the monitor.
 """
@@ -12,7 +12,7 @@ import logging
 
 import httpx
 
-log = logging.getLogger("slopsaver.heartbeat")
+log = logging.getLogger("ai_sre.heartbeat")
 
 
 async def heartbeat_loop(url: str, interval: float = 60.0) -> None:

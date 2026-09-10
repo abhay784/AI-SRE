@@ -5,9 +5,9 @@ from pathlib import Path
 
 import httpx
 
-from slopsaver.adapters.website_adapter import WebsiteAdapter
-from slopsaver.core.reasoning import FakeReasoner
-from slopsaver.core.scheduler import Orchestrator
+from ai_sre.adapters.website_adapter import WebsiteAdapter
+from ai_sre.core.reasoning import FakeReasoner
+from ai_sre.core.scheduler import Orchestrator
 
 
 async def main():

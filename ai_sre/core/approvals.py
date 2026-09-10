@@ -1,7 +1,7 @@
 """Severity gating + human approval flow (PRD §7).
 
 P3 -> execute silently. P2 -> execute + notify. P1 -> queue the proposal and
-wait for a human (CLI: `slopsaver approve <incident_id>`).
+wait for a human (CLI: `ai-sre approve <incident_id>`).
 """
 
 from __future__ import annotations

@@ -5,10 +5,10 @@ import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from slopsaver.adapters.website_adapter import WebsiteAdapter
-from slopsaver.core.notifications import WebhookNotifier
-from slopsaver.core.reasoning import FakeReasoner
-from slopsaver.core.scheduler import Orchestrator
+from ai_sre.adapters.website_adapter import WebsiteAdapter
+from ai_sre.core.notifications import WebhookNotifier
+from ai_sre.core.reasoning import FakeReasoner
+from ai_sre.core.scheduler import Orchestrator
 
 
 async def test_outage_and_recovery_deliver_real_http_webhooks(tmp_path):

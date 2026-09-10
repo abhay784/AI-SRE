@@ -1,8 +1,8 @@
-# kind cluster for the SlopSaver sandbox.
-#   kind create cluster --name slopsaver --config sandbox/kind-config.yaml
+# kind cluster for the AI-SRE sandbox.
+#   kind create cluster --name ai-sre --config sandbox/kind-config.yaml
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
-name: slopsaver
+name: ai-sre
 nodes:
   - role: control-plane
     extraPortMappings:

@@ -11,7 +11,7 @@ import httpx
 
 from .models import Incident
 
-log = logging.getLogger("slopsaver")
+log = logging.getLogger("ai_sre")
 
 
 class WebhookNotifier:

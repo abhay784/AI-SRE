@@ -7,7 +7,7 @@ round-tripped) into `{"AWS": ["*"]}`. The original exact-match check missed
 that shape, so a genuinely public bucket was classified P2 instead of P1.
 """
 
-from slopsaver.adapters.s3_adapter import S3Adapter
+from ai_sre.adapters.s3_adapter import S3Adapter
 
 
 def _policy(principal):

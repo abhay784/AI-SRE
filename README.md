@@ -13,8 +13,7 @@ incident reports, and records recovery when checks pass again.
 Built by [Abhay Korlapati](https://github.com/abhay784) as a reliability
 engineering project focused on asynchronous collectors, deterministic
 detection, constrained AI decisions, and an auditable incident pipeline.
-The Python package retains its original name, `slopsaver`; both `ai-sre`
-and `slopsaver` invoke the same CLI.
+The CLI is `ai-sre`; the importable Python package is `ai_sre`.
 
 **Status:** a working self-hosted monitoring MVP for your own sites and
 repositories. Website and GitHub monitoring are read-only and need no AI
@@ -164,8 +163,8 @@ payloads, operating limits, and optional AI setup.
 
 | Path | Purpose |
 | --- | --- |
-| [`slopsaver/adapters/`](slopsaver/adapters/) | Website, GitHub, and infrastructure collectors |
-| [`slopsaver/core/`](slopsaver/core/) | Rules, orchestration, reasoning, approvals, reports, and notifications |
+| [`ai_sre/adapters/`](ai_sre/adapters/) | Website, GitHub, and infrastructure collectors |
+| [`ai_sre/core/`](ai_sre/core/) | Rules, orchestration, reasoning, approvals, reports, and notifications |
 | [`config/monitoring.example.yaml`](config/monitoring.example.yaml) | Starting configuration for real websites and repositories |
 | [`examples/demo.py`](examples/demo.py) | Reproducible offline outage/recovery demo |
 | [`tests/`](tests/) | Unit and pipeline regression tests with test doubles |

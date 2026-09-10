@@ -42,5 +42,5 @@ integrations:
   deploy:
     metrics_url: http://localhost:30080/metrics
     deploy_state_path: var/deploy_state.json
-    kubectl_context: kind-slopsaver
+    kubectl_context: kind-ai-sre
     interval: 10

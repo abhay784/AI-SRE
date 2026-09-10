@@ -1,6 +1,6 @@
 # Fake restaurant stack. Build + load the image first:
-#   docker build -t slopsaver-sandbox:latest sandbox/
-#   kind load docker-image slopsaver-sandbox:latest --name slopsaver
+#   docker build -t ai-sre-sandbox:latest sandbox/
+#   kind load docker-image ai-sre-sandbox:latest --name ai-sre
 #   kubectl apply -f sandbox/k8s/all.yaml
 ---
 apiVersion: apps/v1
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: slopsaver-sandbox:latest
+          image: ai-sre-sandbox:latest
           imagePullPolicy: IfNotPresent
           env: [{ name: APP, value: gateway }]
           ports: [{ containerPort: 8000 }]
@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
         - name: orders
-          image: slopsaver-sandbox:latest
+          image: ai-sre-sandbox:latest
           imagePullPolicy: IfNotPresent
           env:
             - { name: APP, value: orders }
@@ -64,7 +64,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: slopsaver-sandbox:latest
+          image: ai-sre-sandbox:latest
           imagePullPolicy: IfNotPresent
           env: [{ name: APP, value: auth }]
           ports: [{ containerPort: 8000 }]
@@ -118,8 +118,8 @@ spec:
           image: minio/minio:latest
           args: ["server", "/data"]
           env:
-            - { name: MINIO_ROOT_USER, value: slopsaver }
-            - { name: MINIO_ROOT_PASSWORD, value: slopsaver123 }
+            - { name: MINIO_ROOT_USER, value: ai-sre }
+            - { name: MINIO_ROOT_PASSWORD, value: ai-sre123 }
           ports: [{ containerPort: 9000 }]
 ---
 apiVersion: v1

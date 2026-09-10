@@ -8,7 +8,7 @@ Live-cluster and live-LLM variants layer on top of these (see README).
 
 from pathlib import Path
 
-from slopsaver.core.models import Severity
+from ai_sre.core.models import Severity
 from tests.conftest import FakeAdapter
 
 STRIPE_ACTIONS = {"replay_webhook": "replay", "reconstruct_order": "rebuild"}
@@ -77,7 +77,7 @@ async def test_public_bucket_is_p1_and_waits_for_approval(make_orchestrator):
 async def test_failed_p1_execution_is_requeued_not_dropped(make_orchestrator):
     """A P1 revert that fails after approval (bad credentials, network blip)
     must stay visible and retryable — not vanish from the approval queue.
-    Found live: a failed `slopsaver approve` on a public-bucket incident
+    Found live: a failed `ai-sre approve` on a public-bucket incident
     silently removed it from `pending` with the bucket still exposed."""
     adapter = FakeAdapter("s3", S3_ACTIONS, {"policy_drifted": True, "public_access": True})
     adapter.fail_remediation = True

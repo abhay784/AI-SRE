@@ -18,7 +18,7 @@ from .notifications import WebhookNotifier
 from .report import write_report
 from .rules import RuleEngine
 
-log = logging.getLogger("slopsaver")
+log = logging.getLogger("ai_sre")
 
 
 class Orchestrator:

@@ -201,5 +201,4 @@ configured resource names and repository metadata are sent to the model
 provider. The new collectors exclude website bodies and GitHub tokens.
 Recoveries never require AI. The base Docker image omits the AI extra.
 
-`slopsaver` remains an alias for all `ai-sre` commands. `--config PATH` works
-before or after the subcommand.
+`--config PATH` works before or after the `ai-sre` subcommand.

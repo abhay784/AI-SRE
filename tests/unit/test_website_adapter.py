@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from slopsaver.adapters.website_adapter import WebsiteAdapter
+from ai_sre.adapters.website_adapter import WebsiteAdapter
 
 
 def adapter(handler, **overrides):
@@ -41,7 +41,7 @@ async def test_timeout_and_connection_failure_do_not_expose_url():
 
 async def test_slow_response(monkeypatch):
     times = iter([0, 3])
-    monkeypatch.setattr("slopsaver.adapters.website_adapter.time", type("Clock", (), {
+    monkeypatch.setattr("ai_sre.adapters.website_adapter.time", type("Clock", (), {
         "monotonic": staticmethod(lambda: next(times))}))
     health = await adapter(lambda r: httpx.Response(200)).check_health()
     assert not health.ok

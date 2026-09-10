@@ -1,10 +1,10 @@
-"""SlopSaver CLI.
+"""AI-SRE CLI.
 
-  slopsaver run --config config/customer.yaml [--alert-only] [--fake-reasoner]
-  slopsaver pending                      # list P1 proposals awaiting approval
-  slopsaver approve <incident_id>        # execute an approved P1 remediation
-  slopsaver reject <incident_id>
-  slopsaver dashboard                    # cost / incident stats from the audit log
+  ai-sre run --config config/customer.yaml [--alert-only] [--fake-reasoner]
+  ai-sre pending                      # list P1 proposals awaiting approval
+  ai-sre approve <incident_id>        # execute an approved P1 remediation
+  ai-sre reject <incident_id>
+  ai-sre dashboard                    # cost / incident stats from the audit log
 """
 
 from __future__ import annotations
@@ -75,7 +75,7 @@ async def _run(config: dict, alert_only: bool, fake_reasoner: bool) -> None:
     if url := config.get("heartbeat_url"):
         tasks.append(heartbeat_loop(url, float(config.get("heartbeat_interval", 60))))
     mode = "ALERT-ONLY" if orch.alert_only else "autonomous (P1 gated)"
-    logging.info("SlopSaver running in %s mode with adapters: %s",
+    logging.info("AI-SRE running in %s mode with adapters: %s",
                  mode, ", ".join(orch.adapters))
     await asyncio.gather(*tasks)
 

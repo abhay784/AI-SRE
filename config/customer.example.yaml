@@ -1,4 +1,4 @@
-# SlopSaver customer configuration — sandbox defaults (kind cluster).
+# AI-SRE customer configuration — sandbox defaults (kind cluster).
 # Credentials are always env-var references, never inline values, so each
 # integration can be revoked independently (PRD §10).
 
@@ -10,7 +10,7 @@ alert_only: true
 # heartbeat_url: https://hc-ping.com/your-uuid
 # heartbeat_interval: 60
 
-# Rule-layer threshold overrides (see slopsaver/core/rules.py for defaults)
+# Rule-layer threshold overrides (see ai-sre/core/rules.py for defaults)
 thresholds: {}
 
 integrations:
@@ -59,7 +59,7 @@ integrations:
   deploy:
     metrics_url: http://localhost:30080/metrics
     deploy_state_path: var/deploy_state.json
-    kubectl_context: kind-slopsaver
+    kubectl_context: kind-ai-sre
     interval: 60
 
   backup:

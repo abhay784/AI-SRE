@@ -16,8 +16,8 @@ anomaly context, without overriding a value already present.
 import importlib
 import pkgutil
 
-from slopsaver.core.models import AnomalyEvent, Severity
-from slopsaver.core.reasoning import (
+from ai_sre.core.models import AnomalyEvent, Severity
+from ai_sre.core.reasoning import (
     ACTION_PARAM_SOURCES,
     FakeReasoner,
     backfill_required_params,
@@ -78,12 +78,12 @@ async def test_fake_reasoner_threads_charge_id_into_replay_webhook():
 # documentation the reasoning agent depends on. ----------------------------
 
 def _all_adapter_classes():
-    import slopsaver.adapters as adapters_pkg
-    from slopsaver.core.adapter import BaseAdapter
+    import ai_sre.adapters as adapters_pkg
+    from ai_sre.core.adapter import BaseAdapter
 
     classes = []
     for _, module_name, _ in pkgutil.iter_modules(adapters_pkg.__path__):
-        module = importlib.import_module(f"slopsaver.adapters.{module_name}")
+        module = importlib.import_module(f"ai_sre.adapters.{module_name}")
         for attr in vars(module).values():
             if (isinstance(attr, type) and issubclass(attr, BaseAdapter)
                     and attr is not BaseAdapter and attr.__module__ == module.__name__):
