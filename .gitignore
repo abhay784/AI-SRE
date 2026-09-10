@@ -5,3 +5,4 @@ var/
 config/customer.yaml
 .pytest_cache/
 .env
+build/

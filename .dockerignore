@@ -1,0 +1,8 @@
+.git
+.venv
+.env
+var
+config/customer.yaml
+__pycache__
+.pytest_cache
+*.egg-info
