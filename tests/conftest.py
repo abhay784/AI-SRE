@@ -5,13 +5,13 @@ from __future__ import annotations
 
 import pytest
 
-from slopsaver.core.adapter import BaseAdapter
-from slopsaver.core.approvals import ApprovalQueue
-from slopsaver.core.audit import AuditLog
-from slopsaver.core.models import HealthResult, RemediationResult
-from slopsaver.core.reasoning import FakeReasoner
-from slopsaver.core.rules import RuleEngine
-from slopsaver.core.scheduler import Orchestrator
+from ai_sre.core.adapter import BaseAdapter
+from ai_sre.core.approvals import ApprovalQueue
+from ai_sre.core.audit import AuditLog
+from ai_sre.core.models import HealthResult, RemediationResult
+from ai_sre.core.reasoning import FakeReasoner
+from ai_sre.core.rules import RuleEngine
+from ai_sre.core.scheduler import Orchestrator
 
 
 class FakeAdapter(BaseAdapter):

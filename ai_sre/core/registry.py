@@ -11,7 +11,7 @@ import math
 
 from .adapter import BaseAdapter
 
-# adapter name -> "module:Class" within slopsaver.adapters
+# adapter name -> "module:Class" within ai_sre.adapters
 _ADAPTERS = {
     "website": "website_adapter:WebsiteAdapter",
     "github": "github_adapter:GitHubAdapter",
@@ -47,7 +47,7 @@ def build_adapters(config: dict) -> dict[str, BaseAdapter]:
         if not math.isfinite(interval) or interval <= 0:
             raise ValueError(f"{name}.interval must be a positive finite number")
         module_name, class_name = _ADAPTERS[name].split(":")
-        module = importlib.import_module(f"slopsaver.adapters.{module_name}")
+        module = importlib.import_module(f"ai_sre.adapters.{module_name}")
         adapters[name] = getattr(module, class_name)(adapter_config)
     if not adapters:
         raise ValueError("configure at least one enabled integration")

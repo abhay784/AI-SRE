@@ -76,10 +76,10 @@ def render_report(incident: Incident) -> str:
                      f"**did not succeed** — it's back in the queue for you to retry.")
         if incident.result.detail:
             lines += ["", f"Details: {incident.result.detail}"]
-        lines += ["", f"Retry with: `slopsaver approve {incident.id}`"]
+        lines += ["", f"Retry with: `ai-sre approve {incident.id}`"]
     elif incident.status == "awaiting_approval":
         lines.append(f"We prepared a fix (`{incident.action.action}`) and are **waiting for your approval** "
-                     f"before running it. Approve with: `slopsaver approve {incident.id}`")
+                     f"before running it. Approve with: `ai-sre approve {incident.id}`")
     else:
         outcome = "and it succeeded" if incident.result and incident.result.ok else "but it did not succeed"
         lines.append(f"We ran the fix `{incident.action.action}` {outcome}.")

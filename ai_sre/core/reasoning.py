@@ -21,7 +21,7 @@ from .models import AnomalyEvent, RemediationAction, Severity
 ContextProvider = Callable[[str], Awaitable[dict]]
 
 SYSTEM_PROMPT = """\
-You are the reasoning core of SlopSaver, a reliability agent that protects a
+You are the reasoning core of AI-SRE, a reliability agent that protects a
 small business's website (think: a restaurant with online ordering). A
 deterministic monitor detected an anomaly and woke you up. Your job:
 
@@ -181,7 +181,7 @@ class ClaudeReasoner:
             return {"content": [{"type": "text", "text": "recorded"}]}
 
         server = create_sdk_mcp_server(
-            name="slopsaver", version="1.0.0",
+            name="ai_sre", version="1.0.0",
             tools=[get_adapter_context, propose_remediation],
         )
         options = ClaudeAgentOptions(
@@ -189,10 +189,10 @@ class ClaudeReasoner:
             tools=[],  # allowed_tools auto-approves MCP calls; it does not disable built-ins.
             setting_sources=[],
             system_prompt=SYSTEM_PROMPT,
-            mcp_servers={"slopsaver": server},
+            mcp_servers={"ai_sre": server},
             allowed_tools=[
-                "mcp__slopsaver__get_adapter_context",
-                "mcp__slopsaver__propose_remediation",
+                "mcp__ai_sre__get_adapter_context",
+                "mcp__ai_sre__propose_remediation",
             ],
             max_turns=8,
         )

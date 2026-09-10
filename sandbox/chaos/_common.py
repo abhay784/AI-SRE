@@ -12,5 +12,5 @@ POSTGRES_DSN = os.environ.get(
     "SANDBOX_POSTGRES", "postgresql://restaurant:restaurant@localhost:30432/restaurant"
 )
 MINIO_ENDPOINT = os.environ.get("SANDBOX_MINIO", "http://localhost:30900")
-MINIO_KEY = os.environ.get("MINIO_ROOT_USER", "slopsaver")
-MINIO_SECRET = os.environ.get("MINIO_ROOT_PASSWORD", "slopsaver123")
+MINIO_KEY = os.environ.get("MINIO_ROOT_USER", "ai-sre")
+MINIO_SECRET = os.environ.get("MINIO_ROOT_PASSWORD", "ai-sre123")

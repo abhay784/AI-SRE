@@ -1,7 +1,7 @@
 """Rule-layer thresholds, severity hints, and dedupe."""
 
-from slopsaver.core.models import HealthResult, Severity
-from slopsaver.core.rules import RuleEngine
+from ai_sre.core.models import HealthResult, Severity
+from ai_sre.core.rules import RuleEngine
 
 
 def _health(adapter: str, observed: dict, error: str | None = None) -> HealthResult:

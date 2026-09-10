@@ -136,7 +136,7 @@ class StripeAdapter(BaseAdapter):
             "type": "charge.succeeded",
             "data": {"object": json.loads(json.dumps(charge, default=str))
                      if not hasattr(charge, "to_dict") else charge.to_dict()},
-            "replayed_by": "slopsaver",
+            "replayed_by": "ai_sre",
         }
         async with httpx.AsyncClient(timeout=15) as client:
             resp = await client.post(self.config["webhook_url"], json=event_body)

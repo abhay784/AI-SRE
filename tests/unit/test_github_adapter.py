@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from slopsaver.adapters.github_adapter import GitHubAdapter
+from ai_sre.adapters.github_adapter import GitHubAdapter
 
 
 def run(conclusion="failure", **extra):

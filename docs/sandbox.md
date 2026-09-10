@@ -7,9 +7,9 @@ exercise the incident/remediation pipeline and require system-specific setup.
 Requires Docker, kind, kubectl, and Python 3.11+.
 
 ```bash
-kind create cluster --name slopsaver --config sandbox/kind-config.yaml
-docker build -t slopsaver-sandbox:latest sandbox/
-kind load docker-image slopsaver-sandbox:latest --name slopsaver
+kind create cluster --name ai-sre --config sandbox/kind-config.yaml
+docker build -t ai-sre-sandbox:latest sandbox/
+kind load docker-image ai-sre-sandbox:latest --name ai-sre
 kubectl apply -f sandbox/k8s/all.yaml
 
 python -m pip install '.[adapters,sandbox]'

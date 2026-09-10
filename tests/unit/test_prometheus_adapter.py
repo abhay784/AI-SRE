@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from slopsaver.adapters.prometheus_adapter import PrometheusAdapter
+from ai_sre.adapters.prometheus_adapter import PrometheusAdapter
 
 
 def response(result_type="scalar", result=None, **payload):

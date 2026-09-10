@@ -51,7 +51,7 @@ def summarize(audit: AuditLog) -> dict:
 
 def render(audit: AuditLog) -> str:
     stats = summarize(audit)
-    lines = ["SlopSaver dashboard", "=" * 40]
+    lines = ["AI-SRE dashboard", "=" * 40]
     for key, value in stats.items():
         lines.append(f"{key:28} {value}")
     return "\n".join(lines)

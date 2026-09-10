@@ -1,14 +1,14 @@
 """Severity guardrails, approval queue mechanics, and report rendering."""
 
-from slopsaver.core.approvals import ApprovalQueue, apply_severity_guardrails
-from slopsaver.core.models import (
+from ai_sre.core.approvals import ApprovalQueue, apply_severity_guardrails
+from ai_sre.core.models import (
     AnomalyEvent,
     Incident,
     RemediationAction,
     RemediationResult,
     Severity,
 )
-from slopsaver.core.report import render_report
+from ai_sre.core.report import render_report
 
 
 def _action(adapter="stripe", action="replay_webhook", severity=Severity.P3):
@@ -72,4 +72,4 @@ def test_report_awaiting_approval_includes_cli_hint():
                         action=_action(adapter="deploy", action="rollback", severity=Severity.P1),
                         status="awaiting_approval")
     report = render_report(incident)
-    assert f"slopsaver approve {incident.id}" in report
+    assert f"ai-sre approve {incident.id}" in report
