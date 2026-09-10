@@ -11,12 +11,15 @@ from pathlib import Path
 from .models import Incident, Severity
 
 _SEVERITY_LABEL = {
-    Severity.P1: "Serious — needed your approval",
-    Severity.P2: "Moderate — we fixed it and are telling you",
-    Severity.P3: "Minor — fixed automatically",
+    Severity.P1: "P1 — serious",
+    Severity.P2: "P2 — moderate",
+    Severity.P3: "P3 — minor",
 }
 
 _FRIENDLY_TITLES = {
+    "website_unhealthy": "A website health check is failing",
+    "github_workflow_failed": "A GitHub Actions workflow needs attention",
+    "monitor_recovered": "A monitored system is healthy again",
     "stripe_order_mismatch": "A customer was charged but their order didn't come through",
     "stripe_webhook_failing": "Payment notifications from Stripe are failing",
     "db_pool_exhaustion": "The website's database was running out of connections",
@@ -57,10 +60,16 @@ def render_report(incident: Incident) -> str:
         "## What we did",
         "",
     ]
-    if incident.action is None or incident.action.action == "none":
+    if incident.status == "recovered":
+        lines.append("A new health check passed. No remediation was executed.")
+    elif incident.action is None or incident.action.action == "none":
         lines.append("Nothing needed — this turned out to be a false alarm.")
     elif incident.action.action == "escalate":
-        lines.append("This needed a human decision, so we alerted you instead of acting automatically.")
+        lines.append("Recorded for human attention. No remediation was executed. "
+                     "External delivery is tracked separately in the notification audit log when configured.")
+    elif incident.status == "escalated":
+        lines.append(f"Alert-only mode: recorded the proposed fix `{incident.action.action}`. "
+                     "No remediation was executed.")
     elif incident.status == "awaiting_approval" and incident.result is not None:
         lines.append(f"We tried the fix `{incident.action.action}` after your approval, but it "
                      f"**did not succeed** — it's back in the queue for you to retry.")

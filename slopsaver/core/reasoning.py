@@ -71,7 +71,7 @@ DEFAULT_DECISIONS: dict[str, tuple[str, Severity]] = {
     "form_spam": ("enable_captcha", Severity.P3),
     "bad_deploy": ("rollback", Severity.P1),
     "backup_failure": ("escalate", Severity.P2),
-    "collector_failure": ("none", Severity.P3),
+    "collector_failure": ("escalate", Severity.P2),
 }
 
 # Anomaly-context keys an action needs, copied verbatim into `params`. Without
@@ -106,10 +106,20 @@ class FakeReasoner:
         if action not in allowed_actions and action not in ("escalate", "none"):
             action = "escalate"
         params = backfill_required_params(action, {}, anomaly)
+        rationale = "deterministic default decision"
+        if anomaly.anomaly_type == "website_unhealthy":
+            rationale = f"{anomaly.context['name']}: " + "; ".join(anomaly.context.get("issues", []))
+        elif anomaly.anomaly_type == "github_workflow_failed":
+            ctx = anomaly.context
+            rationale = f"{ctx['repo']} ({ctx['branch']}): {ctx['workflow']} ended with {ctx['conclusion']}. See {ctx['url']}"
+        elif anomaly.anomaly_type == "collector_failure":
+            rationale = anomaly.context.get("error", "Monitoring is unavailable; inspect the collector configuration.")
+        elif anomaly.anomaly_type == "monitor_recovered":
+            rationale = f"{anomaly.context['resource_id']} is healthy again."
         return RemediationAction(
             anomaly_id=anomaly.id, adapter=anomaly.adapter, action=action,
             params=params, severity=severity,
-            rationale="deterministic default decision",
+            rationale=rationale,
         )
 
 
@@ -173,6 +183,8 @@ class ClaudeReasoner:
         )
         options = ClaudeAgentOptions(
             model=self.MODEL,
+            tools=[],  # allowed_tools auto-approves MCP calls; it does not disable built-ins.
+            setting_sources=[],
             system_prompt=SYSTEM_PROMPT,
             mcp_servers={"slopsaver": server},
             allowed_tools=[

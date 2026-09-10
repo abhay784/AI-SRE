@@ -39,7 +39,9 @@ class RuleEngine:
     def __init__(self, thresholds: dict | None = None, dedupe_minutes: int = 30):
         self.t = {**DEFAULT_THRESHOLDS, **(thresholds or {})}
         self.history: dict[str, deque[HealthResult]] = {}
-        self._recent: dict[tuple[str, str], datetime] = {}
+        self._recent: dict[tuple[str, str, str], datetime] = {}
+        self._streaks: dict[tuple[str, str, str], int] = {}
+        self._active: set[tuple[str, str, str]] = set()
         self.dedupe = timedelta(minutes=dedupe_minutes)
 
     def evaluate(self, health: HealthResult) -> list[AnomalyEvent]:
@@ -54,7 +56,7 @@ class RuleEngine:
     # -- dedupe -------------------------------------------------------------
 
     def _not_duplicate(self, anomaly: AnomalyEvent) -> bool:
-        key = (anomaly.adapter, anomaly.anomaly_type)
+        key = (anomaly.adapter, anomaly.anomaly_type, str(anomaly.context.get("resource_id", "")))
         last = self._recent.get(key)
         now = datetime.now(timezone.utc)
         if last and now - last < self.dedupe:
@@ -67,6 +69,48 @@ class RuleEngine:
                             context={**h.observed, **extra})
 
     # -- per-adapter rules ----------------------------------------------------
+
+    def _condition(self, h: HealthResult, kind: str, context: dict, *,
+                   unhealthy: bool, threshold: int = 1) -> list[AnomalyEvent]:
+        resource = str(context["resource_id"])
+        key = (h.adapter, kind, resource)
+        recovery_key = (h.adapter, "monitor_recovered", resource)
+        if unhealthy:
+            self._streaks[key] = min(self._streaks.get(key, 0) + 1, threshold)
+            if self._streaks[key] < threshold:
+                return []
+            self._active.add(key)
+            self._recent.pop(recovery_key, None)
+            return [AnomalyEvent(adapter=h.adapter, anomaly_type=kind, severity_hint=Severity.P2,
+                                 context={**context, "consecutive_failures": self._streaks[key]})]
+        self._streaks.pop(key, None)
+        self._recent.pop(key, None)
+        if key in self._active:
+            self._active.remove(key)
+            return [AnomalyEvent(adapter=h.adapter, anomaly_type="monitor_recovered",
+                                 severity_hint=Severity.P3,
+                                 context={**context, "recovered_from": kind})]
+        return []
+
+    def _rule_website(self, h: HealthResult) -> list[AnomalyEvent]:
+        out = []
+        for target in h.observed.get("targets", []):
+            out.extend(self._condition(h, "website_unhealthy", target,
+                                      unhealthy=not target["ok"],
+                                      threshold=target.get("failure_threshold", 2)))
+        return out
+
+    def _rule_github(self, h: HealthResult) -> list[AnomalyEvent]:
+        out = []
+        for repository in h.observed.get("repositories", []):
+            context = {k: v for k, v in repository.items() if k != "runs"}
+            out.extend(self._condition(h, "collector_failure", context,
+                                      unhealthy=bool(repository.get("error"))))
+            # Partial API responses must not resolve previously failing workflows.
+            for run in repository.get("runs", []):
+                out.extend(self._condition(h, "github_workflow_failed", run,
+                                          unhealthy=not run["ok"]))
+        return out
 
     def _rule_stripe(self, h: HealthResult) -> list[AnomalyEvent]:
         out = []

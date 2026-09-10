@@ -1,0 +1,19 @@
+services:
+  monitor:
+    build: .
+    restart: unless-stopped
+    init: true
+    environment:
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      AI_SRE_WEBHOOK_URL: ${AI_SRE_WEBHOOK_URL:-}
+    volumes:
+      - ./config/customer.yaml:/app/config/customer.yaml:ro
+      - monitor-data:/app/var
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  monitor-data:
