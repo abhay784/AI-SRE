@@ -33,6 +33,17 @@ class AuditLog:
             "cost_usd": cost_usd, "duration_ms": duration_ms, "decision": decision,
         })
 
+    def health_check(self, *, adapter: str, ok: bool, observed: dict,
+                     error: str | None = None, interval_seconds: float | None = None) -> None:
+        """Persist every poll so availability and latency can be measured."""
+        self._append("health_checks.jsonl", {
+            "adapter": adapter,
+            "ok": ok,
+            "error": error,
+            "interval_seconds": interval_seconds,
+            "observed": observed,
+        })
+
     def action(self, *, incident_id: str, anomaly_type: str, adapter: str,
                action: str, params: dict, severity: str, status: str,
                detail: str = "", approved_by: str | None = None) -> None:
