@@ -70,6 +70,13 @@ class Orchestrator:
         except Exception as exc:
             health = HealthResult(adapter=adapter.name, ok=False,
                                   error=f"collector raised {type(exc).__name__}")
+        self.audit.health_check(
+            adapter=health.adapter,
+            ok=health.ok and not bool(health.error),
+            error=health.error,
+            observed=health.observed,
+            interval_seconds=float(adapter.config.get("interval", adapter.default_interval)),
+        )
         incidents = []
         for anomaly in self.rules.evaluate(health):
             log.warning("anomaly detected: %s/%s", anomaly.adapter, anomaly.anomaly_type)

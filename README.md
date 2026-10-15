@@ -115,6 +115,15 @@ ai-sre check --config config/customer.yaml
 ai-sre run --config config/customer.yaml
 ```
 
+This repository also includes a live dogfooding configuration for Abhay's
+portfolio. It records every poll for availability and latency reporting:
+
+```bash
+ai-sre check --config config/personal-website.yaml
+ai-sre run --config config/personal-website.yaml
+ai-sre dashboard --config config/personal-website.yaml
+```
+
 The example selects deterministic decisions and alert-only mode. A minimal
 configuration looks like this:
 
@@ -166,6 +175,7 @@ payloads, operating limits, and optional AI setup.
 | [`ai_sre/adapters/`](ai_sre/adapters/) | Website, GitHub, and infrastructure collectors |
 | [`ai_sre/core/`](ai_sre/core/) | Rules, orchestration, reasoning, approvals, reports, and notifications |
 | [`config/monitoring.example.yaml`](config/monitoring.example.yaml) | Starting configuration for real websites and repositories |
+| [`config/personal-website.yaml`](config/personal-website.yaml) | Live read-only monitor for Abhay's portfolio |
 | [`examples/demo.py`](examples/demo.py) | Reproducible offline outage/recovery demo |
 | [`tests/`](tests/) | Unit and pipeline regression tests with test doubles |
 | [`sandbox/`](sandbox/) | Local Kubernetes stack and failure injection scripts |
