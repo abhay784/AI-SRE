@@ -5,7 +5,7 @@ escalated ratio, and MTTD/MTTR where derivable.
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime
 
 from ..core.audit import AuditLog
@@ -14,6 +14,7 @@ from ..core.audit import AuditLog
 def summarize(audit: AuditLog) -> dict:
     actions = audit.read("actions.jsonl")
     llm_calls = audit.read("llm_calls.jsonl")
+    health_checks = audit.read("health_checks.jsonl")
 
     by_status = Counter(a["status"] for a in actions)
     incidents = {a["incident_id"] for a in actions}
@@ -35,6 +36,31 @@ def summarize(audit: AuditLog) -> dict:
     total_tokens = sum((c.get("input_tokens") or 0) + (c.get("output_tokens") or 0)
                        for c in llm_calls)
 
+    website_samples: dict[str, list[dict]] = defaultdict(list)
+    for check in health_checks:
+        if check.get("adapter") != "website":
+            continue
+        for target in check.get("observed", {}).get("targets", []):
+            name = target.get("name") or target.get("resource_id") or "unknown"
+            website_samples[str(name)].append(target)
+
+    website_targets = {}
+    for name, samples in sorted(website_samples.items()):
+        successful = sum(bool(sample.get("ok")) for sample in samples)
+        latencies = sorted(
+            float(sample["latency_ms"])
+            for sample in samples
+            if isinstance(sample.get("latency_ms"), (int, float))
+        )
+        p95_index = max(0, int(len(latencies) * 0.95 + 0.999999) - 1) if latencies else 0
+        website_targets[name] = {
+            "checks": len(samples),
+            "successful_checks": successful,
+            "availability_pct": round(100.0 * successful / len(samples), 3),
+            "average_latency_ms": round(sum(latencies) / len(latencies), 1) if latencies else None,
+            "p95_latency_ms": round(latencies[p95_index], 1) if latencies else None,
+        }
+
     return {
         "incidents": len(incidents),
         "by_status": dict(by_status),
@@ -46,6 +72,7 @@ def summarize(audit: AuditLog) -> dict:
         "llm_calls": len(llm_calls),
         "llm_tokens": total_tokens,
         "llm_spend_usd": round(total_cost, 4),
+        "website_targets": website_targets,
     }
 
 

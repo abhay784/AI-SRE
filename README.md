@@ -36,6 +36,26 @@ The legacy adapters require their own credentials, infrastructure, or
 application-specific endpoints. They are integration examples, not a claim
 that every production stack is supported automatically.
 
+## Measured reliability benchmarks
+
+Controlled benchmarks make the detection behavior reproducible instead of
+projecting results from configuration:
+
+| Benchmark | Measured result |
+| --- | --- |
+| Website fault detection | **200/200 outages detected** across HTTP 500, HTTP 503, missing-content, and latency-SLO failures; **100% recall** and **100% precision**. |
+| Healthy website checks | **0 false alerts across 1,000 polls**; **0% observed false-positive rate**. |
+| Website recovery | **200/200 recoveries detected** on the first healthy poll. |
+| Alert deduplication | **29 alerts without deduplication versus 1 with it** across 30 failed polls; **96.552% measured suppression**. |
+| Docker/kind integration | **50/50 degradation trials passed**, producing all **100 expected alerts** with no false alerts across 50 healthy baselines. |
+
+The localhost website benchmark measured **84.432 ms p95** processing for two
+immediate failed probes. The Docker/kind email path measured **21.174 ms p95**
+from fault injection through collection and rule evaluation. These processing
+times exclude the configured scheduler interval and are not production outage
+detection SLAs. See [`benchmarks/`](benchmarks/) for executable harnesses, raw
+JSON, full reports, and scope limitations.
+
 ## Engineering highlights
 
 - **Separate detection from reasoning.** Healthy polls never invoke the LLM.
@@ -115,6 +135,15 @@ ai-sre check --config config/customer.yaml
 ai-sre run --config config/customer.yaml
 ```
 
+This repository also includes a live dogfooding configuration for Abhay's
+portfolio. It records every poll for availability and latency reporting:
+
+```bash
+ai-sre check --config config/personal-website.yaml
+ai-sre run --config config/personal-website.yaml
+ai-sre dashboard --config config/personal-website.yaml
+```
+
 The example selects deterministic decisions and alert-only mode. A minimal
 configuration looks like this:
 
@@ -166,8 +195,10 @@ payloads, operating limits, and optional AI setup.
 | [`ai_sre/adapters/`](ai_sre/adapters/) | Website, GitHub, and infrastructure collectors |
 | [`ai_sre/core/`](ai_sre/core/) | Rules, orchestration, reasoning, approvals, reports, and notifications |
 | [`config/monitoring.example.yaml`](config/monitoring.example.yaml) | Starting configuration for real websites and repositories |
+| [`config/personal-website.yaml`](config/personal-website.yaml) | Live read-only monitor for Abhay's portfolio |
 | [`examples/demo.py`](examples/demo.py) | Reproducible offline outage/recovery demo |
 | [`tests/`](tests/) | Unit and pipeline regression tests with test doubles |
+| [`benchmarks/`](benchmarks/) | Reproducible labeled-fault reliability benchmarks and measured results |
 | [`sandbox/`](sandbox/) | Local Kubernetes stack and failure injection scripts |
 | [`docs/sandbox.md`](docs/sandbox.md) | Original infrastructure demo and remediation walkthrough |
 | [`docs/roadmap.md`](docs/roadmap.md) | Steps from self-hosted use to a hosted product |
