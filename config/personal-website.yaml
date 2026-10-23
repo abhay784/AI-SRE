@@ -1,0 +1,17 @@
+# Production dogfooding target for Abhay Korlapati's portfolio.
+# Run this monitor from an always-on host outside Vercel's failure domain.
+alert_only: true
+reasoner: deterministic
+state_dir: var/personal-website
+
+integrations:
+  website:
+    interval: 60
+    targets:
+      - name: abhay-portfolio
+        url: https://personal-website-wheat-alpha-63.vercel.app/
+        expected_status: 200
+        contains: AbhayOS
+        max_latency_ms: 2000
+        timeout_seconds: 10
+        failure_threshold: 2

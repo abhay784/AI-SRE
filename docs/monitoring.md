@@ -123,11 +123,17 @@ and [license information](https://prometheus.io/docs/introduction/faq/#what-is-t
 
 `state_dir` defaults to `var`, relative to the working directory:
 
+- `audit/health_checks.jsonl`: every poll, including target outcome and latency.
 - `incidents/*.md`: failure and recovery reports.
 - `audit/actions.jsonl`: incident decisions and outcomes.
 - `audit/notifications.jsonl`: webhook delivery results.
 - `audit/llm_calls.jsonl`: successful AI decisions and usage when enabled.
 - `approvals/`: legacy remediation proposals awaiting approval.
+
+Run `ai-sre dashboard --config config/customer.yaml` to summarize each website's
+check count, successful checks, measured availability, average latency, and p95
+latency. Availability is based on completed monitor polls, so keep the monitor
+on an always-on host and use the optional heartbeat to detect monitor downtime.
 
 Repeated failures for a website/workflow are suppressed for 30 minutes, then
 persistent conditions produce reminder incidents. Independent targets do not

@@ -1,0 +1,56 @@
+{
+  "benchmark": "website reliability pipeline",
+  "measured_at": "2026-10-15T01:31:20.283833+00:00",
+  "environment": {
+    "python": "3.13.12",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O"
+  },
+  "configuration": {
+    "fault_types": [
+      "http_500",
+      "http_503",
+      "missing_content",
+      "latency_slo"
+    ],
+    "trials_per_fault": 50,
+    "healthy_polls": 1000,
+    "failure_threshold": 2,
+    "production_poll_interval_seconds": 60
+  },
+  "results": {
+    "injected_outages": 200,
+    "detected_outages": 200,
+    "missed_outages": 0,
+    "detection_recall_pct": 100.0,
+    "alert_precision_pct": 100.0,
+    "healthy_polls": 1000,
+    "false_alerts": 0,
+    "false_positive_rate_pct": 0.0,
+    "recovered_outages": 200,
+    "recovery_recall_pct": 100.0,
+    "detections_by_fault": {
+      "http_500": 50,
+      "http_503": 50,
+      "missing_content": 50,
+      "latency_slo": 50
+    },
+    "immediate_two_poll_detection_p50_ms": 22.98,
+    "immediate_two_poll_detection_p95_ms": 84.432,
+    "single_poll_recovery_p50_ms": 11.491,
+    "single_poll_recovery_p95_ms": 13.429,
+    "configured_detection_window_seconds": [
+      60,
+      120
+    ],
+    "failed_polls_in_dedupe_test": 30,
+    "alerts_without_deduplication": 29,
+    "alerts_with_30_minute_deduplication": 1,
+    "measured_alert_suppression_pct": 96.552,
+    "recovery_reset_passed": true
+  },
+  "interpretation": {
+    "scope": "Controlled localhost faults through the real HTTP adapter and rule engine.",
+    "latency": "Immediate-poll processing latency excludes the configured 60-second sleep between production polls.",
+    "production": "These results do not establish production uptime, Internet latency, or multi-region behavior."
+  }
+}

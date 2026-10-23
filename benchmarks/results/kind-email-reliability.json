@@ -1,0 +1,31 @@
+{
+  "benchmark": "Docker/kind email degradation path",
+  "measured_at": "2026-10-15T01:33:13.908114+00:00",
+  "configuration": {
+    "gateway_url": "http://localhost:30080",
+    "trials": 50,
+    "expected_anomalies_per_trial": [
+      "email_bounce_spike",
+      "email_quota_near_limit"
+    ]
+  },
+  "results": {
+    "injected_trials": 50,
+    "successful_trials": 50,
+    "expected_alerts": 100,
+    "correct_alerts": 100,
+    "unexpected_alerts": 0,
+    "healthy_baselines": 50,
+    "false_alerts": 0,
+    "detection_recall_pct": 100.0,
+    "alert_precision_pct": 100.0,
+    "false_positive_rate_pct": 0.0,
+    "immediate_detection_p50_ms": 15.782,
+    "immediate_detection_p95_ms": 21.174
+  },
+  "interpretation": {
+    "scope": "HTTP fault injection into the running Docker/kind gateway, adapter collection, and deterministic rule evaluation.",
+    "latency": "Includes fault injection and immediate collection, but excludes the configured scheduler interval.",
+    "coverage": "Measures the email degradation scenario only; it is not an accuracy claim for every sandbox adapter."
+  }
+}
