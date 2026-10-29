@@ -188,6 +188,9 @@ policy. Run it on an always-on machine outside the site you are monitoring.
 See the [monitoring guide](docs/monitoring.md) for authentication, webhook
 payloads, operating limits, and optional AI setup.
 
+For persistent monitoring on macOS, including automatic startup after login,
+see the [macOS deployment guide](docs/persistent-monitoring.md).
+
 ## Repository guide
 
 | Path | Purpose |

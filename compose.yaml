@@ -1,5 +1,6 @@
 services:
   monitor:
+    container_name: ai-sre-personal-monitor
     build: .
     restart: unless-stopped
     init: true
@@ -9,6 +10,19 @@ services:
     volumes:
       - ./config/customer.yaml:/app/config/customer.yaml:ro
       - monitor-data:/app/var
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import os,time; p='/app/var/audit/health_checks.jsonl';
+          raise SystemExit(0 if os.path.isfile(p) and time.time()-os.path.getmtime(p) < 180 else 1)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    stop_grace_period: 15s
     logging:
       driver: json-file
       options:

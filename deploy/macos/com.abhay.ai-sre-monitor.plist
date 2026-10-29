@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.abhay.ai-sre-monitor</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/abhaykorlapati/Library/Application Support/AI-SRE/start-monitor.sh</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StartInterval</key>
+  <integer>300</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/abhaykorlapati/Library/Logs/AI-SRE/launchd.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/abhaykorlapati/Library/Logs/AI-SRE/launchd.stderr.log</string>
+</dict>
+</plist>
